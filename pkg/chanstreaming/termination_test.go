@@ -3,7 +3,7 @@ package chanstreaming_test
 import (
 	"context"
 	"errors"
-	ch "github.com/diemenator/go-chanstreaming"
+	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
 	"testing"
 	"time"
 )
