@@ -10,9 +10,9 @@ Here is a sequence of intuitions that underline the designs found in this repo
 - a strongly-typed readonly channel can be used to implement a typed async iterable/enumerable (like in C# and Python) programming models
 - a collection of channels and goroutines can be used to implement a parallel processing pipeline sdk (like in Akka Streams and PLINQ)
 
-# The channel-centric streaming lib
+# The chanstreaming lib
 
-The `chan-centric streaming lib` is a small collection of utilities built around golang's channels, intended for simplified orchestration of parallel processing and batching.
+The `<-chan streaming lib` is a small collection of utilities built around golang's channels that implements **dataflow** paradigm, intended as convenient tool for building modular workflows and data streaming applications.
 
 The functions featured here accept read-only typed channels as inputs and return typed channels as outputs, allowing for easy composition and chaining of operations.
 
