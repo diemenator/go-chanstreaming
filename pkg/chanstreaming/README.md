@@ -57,15 +57,13 @@ Designed for **sharding workloads, distributing traffic, and parallelizing proce
 Many become one. When all sources are exhausted, the system closes itself—**no watchers, no counters, no waste**.  
 Particularly useful for **aggregating multiple event sources, log streams, or external APIs into a unified pipeline**.
 
-## There's go-streams, why another one?
-- The `go-streams` lib implements idiomatical, Java-inspired Streams API and/or similar data flow building frameworks seen in other languages. This is done traditionally in objective way, exposing the Fluent-style interface to give you a concise workflow builder.
-- The `chanstreaming` lib addresses roughly same class of data/control streaming scenarios, but advocates for the re-use the `<-chan T` primitive as the main object of the module's API surface. Decouple, extend, test & rearrange the workflows in type-safe way.
-- For production use, the real difference would be the style of the execution. Depending on the task and background one could choose to describe complex precisely-timed workflows with go-streams first, or inline the timed-concurrency-critical piece in its own code space.
-- The two are very much compatible as they can be used together in same project.
-- There are no generic methods in golang, so the `chanstreaming` lib does not try to implement them by hacking around `reflect` and `any`. We simply expose higher order functions in the API instead.
+## There's go-streams amd others, why another one?
+- The `chanstreaming` lib addresses roughly same class of data/control streaming scenarios, but chooses to use the `<-chan T` (read-only channel) primitive as the central type of the module's API surface. Decouple, extend, test & rearrange the workflows in type-safe way by using pre-existing builtins.
+- For production use, the real difference would be the style of the execution. For explicit control on both producer and consumer ends, one could consider to use `go-streams` first, or inline the timed-concurrency-critical pieces in their own coroutine or combine the approaches.
+- There are no generic methods in golang, so the `chanstreaming` lib does not try to implement the wrapper that attempts to sidestep it with the use of `reflect` and `any`. We simply expose higher order functions in the API instead for easier composition.
 
 ### What's missing?
 - [ ] Examples:
   - [ ] Basic system & IO (FromCSV(filename), FromShell(command, args...) (to produce a stream of stdout+stderr+eof+exitCode messages)
   - [ ] Integration demos (shell, kafka, sql, rpc)
-  - [ ] More tests
+  - [ ] Metering
