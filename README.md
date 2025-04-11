@@ -19,7 +19,7 @@ Here is a sequence of intuitions that underline the designs found in this repo
 - a size-1 readonly-channel can represent an awaitable Future
 - a N-sized channel of 1-sized channels can represent a group of workers
 - a strongly-typed readonly channel can be used to interpreted a typed async iterable/enumerable, expressed with channels
-- a collection of functions use goroutines to serve new result channels can be used to cleanly implement a parallel processing pipeline sdk (like in Akka Streams and PLINQ)
+- a collection of functions that use goroutines to create and serve new channels can be used to build parallel highly composable sdk (like in Akka Streams and PLINQ) with `<-chan T` championed as a core primitive.
 
 # The library
 
