@@ -18,8 +18,8 @@ Golang's channel is a very generic construct that allows to build a variety of p
 Here is a sequence of intuitions that underline the designs found in this repo
 - a size-1 readonly-channel can represent an awaitable Future
 - a N-sized channel of 1-sized channels can represent a group of workers
-- a strongly-typed readonly channel can be used to implement a typed async iterable/enumerable (like in C# and Python) programming models
-- a collection of channels and goroutines can be used to implement a parallel processing pipeline sdk (like in Akka Streams and PLINQ)
+- a strongly-typed readonly channel can be used to interpreted a typed async iterable/enumerable, expressed with channels
+- a collection of functions use goroutines to serve new result channels can be used to cleanly implement a parallel processing pipeline sdk (like in Akka Streams and PLINQ)
 
 # The library
 
