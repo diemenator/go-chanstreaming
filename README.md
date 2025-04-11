@@ -2,7 +2,7 @@
 
 ## TLDR
 
-```go get github.com/diemenator/go-chanstreaming/pkg/chanstreaming@v0.0.1-preview```
+```go get github.com/diemenator/go-chanstreaming/pkg/chanstreaming@v0.0.1```
 
 https://pkg.go.dev/github.com/diemenator/go-chanstreaming/pkg/chanstreaming#pkg-functions
 
