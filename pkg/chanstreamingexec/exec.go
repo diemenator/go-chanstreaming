@@ -1,7 +1,6 @@
 package chanstreamingexec
 
 import (
-	"errors"
 	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
 	"io"
 	"os"
@@ -156,11 +155,12 @@ func IgnoreError(err error) {
 	return
 }
 
-func ToCmdProc(cmd *exec.Cmd, src <-chan ProcIn, onWriteError WriteErrorCallback) error {
+func SinkToCmd(cmd *exec.Cmd, onWriteError WriteErrorCallback) (func(src <-chan ProcIn), error) {
 	stdInPipe, err := cmd.StdinPipe()
 	if err != nil {
-		return err
+		return nil, err
 	}
+
 	processItem := func(x ProcIn) {
 		if x.MessageType == Signal {
 			sigError := cmd.Process.Signal(x.Signal)
@@ -178,31 +178,37 @@ func ToCmdProc(cmd *exec.Cmd, src <-chan ProcIn, onWriteError WriteErrorCallback
 				if written > 0 {
 					toWrite = toWrite[written:]
 				} else {
-					onWriteError(errors.New("idle"))
+					onWriteError(nil)
 				}
 			}
 		}
 	}
 
-	go func() {
-		for ins := range src {
-			processItem(ins)
-		}
-	}()
+	result := func(src <-chan ProcIn) {
+		go func() {
+			for ins := range src {
+				processItem(ins)
+			}
+		}()
+	}
 
-	return nil
+	return result, nil
 }
 
-func Launch(cmd *exec.Cmd, src <-chan ProcIn, writeError WriteErrorCallback) <-chan ProcOut {
-	writeErr := ToCmdProc(cmd, src, writeError)
-	if writeErr != nil {
-		writeError(writeErr)
-	}
-	ios := ch.Merged(FromCmdStdErr(cmd), FromCmdStdOut(cmd))
-	startErr := cmd.Start()
-	if startErr != nil {
-		return ch.Concat(NewIOErrorChan(startErr), ios)
+func Launch(cmd *exec.Cmd, writeErrorCallback WriteErrorCallback) (func(src <-chan ProcIn) <-chan ProcOut, error) {
+	cmdSink, sinkErr := SinkToCmd(cmd, writeErrorCallback)
+	if sinkErr != nil {
+		return nil, sinkErr
 	}
 
-	return ch.Concat(ios, FromProcAwait(cmd))
+	return func(src <-chan ProcIn) <-chan ProcOut {
+		ios := ch.Merged(FromCmdStdErr(cmd), FromCmdStdOut(cmd))
+		cmdSink(src)
+		startErr := cmd.Start()
+		if startErr != nil {
+			return ch.Concat(NewIOErrorChan(startErr), ios)
+		}
+
+		return ch.Concat(ios, FromProcAwait(cmd))
+	}, nil
 }

@@ -9,7 +9,13 @@ import (
 
 func TestEcho(t *testing.T) {
 	echoCommand := chexec.NewShellCommand("echo hello world")
-	launched := chexec.Launch(echoCommand, ch.Empty[chexec.ProcIn](), chexec.IgnoreError)
+	launcher, err := chexec.Launch(echoCommand, chexec.IgnoreError)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	launched := launcher(ch.Empty[chexec.ProcIn]())
 	slice := ch.ToSlice(launched)
 	t.Log(slice)
 
