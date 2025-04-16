@@ -71,3 +71,11 @@ func Partition[T any](maxPartitions int, partitioner func(T) int) func(in <-chan
 		return readOnlyOuts
 	}
 }
+
+func MergeSlice[T any](sources []<-chan T) <-chan T {
+	return Merge(sources)
+}
+
+func Merged[T any](sources ...<-chan T) <-chan T {
+	return MergeSlice(sources)
+}
