@@ -25,15 +25,16 @@ func BatchWeighted[T any, N NumberType](
 	maxCount int,
 	maxInterval time.Duration,
 ) func(in <-chan T) <-chan []T {
+	tickSize := max(maxInterval/1000, time.Millisecond*time.Duration(5))
 	return func(in <-chan T) <-chan []T {
 		// launch consumer that reshapes source stream into data + tick signals
-		done := make(chan struct{}, 1)
+		done := make(chan struct{})
 		dataAndTickChannel := make(chan weightedBatchElement[T, N], 1)
 		go func() {
 			defer func() {
-				close(dataAndTickChannel)
+				close(done)
 				// signal completion of original source - used to shut down the ticker
-				done <- struct{}{}
+
 			}()
 			for sourceItem := range in {
 				dataAndTickChannel <- weightedBatchElement[T, N]{
@@ -44,8 +45,8 @@ func BatchWeighted[T any, N NumberType](
 		}()
 
 		go func() {
-			ticker := time.Tick(max(maxInterval/100, time.Millisecond*time.Duration(5)))
-			defer close(done)
+			defer close(dataAndTickChannel)
+			ticker := time.Tick(tickSize)
 			for {
 				select {
 				case <-done:
@@ -56,7 +57,6 @@ func BatchWeighted[T any, N NumberType](
 					if !ok {
 						return
 					}
-
 					dataAndTickChannel <- weightedBatchElement[T, N]{tick: true}
 				}
 			}
