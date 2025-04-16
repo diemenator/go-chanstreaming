@@ -31,3 +31,12 @@ func FlatMapSlice[T any, R any](f func(v T) []R) func(in <-chan T) <-chan R {
 		return out
 	}
 }
+
+func Identity[T any](v T) T {
+	return v
+}
+
+func Concat[T any](channels ...<-chan T) <-chan T {
+	channelOfChannels := FromSlice(channels)
+	return FlatMap(Identity[<-chan T])(channelOfChannels)
+}

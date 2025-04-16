@@ -12,6 +12,11 @@ func FromSlice[T any](data []T) <-chan T {
 	return output
 }
 
+// Empty creates an empty readonly channel from a slice
+func Empty[T any]() <-chan T {
+	return FromSlice[T]([]T{})
+}
+
 // ToSlice collects all elements from the channel and returns them as a slice
 func ToSlice[T any](in <-chan T) []T {
 	collected := make([]T, 0)
