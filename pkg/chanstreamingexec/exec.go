@@ -83,7 +83,7 @@ func FromIoReadCloser(reader *io.ReadCloser, messageType ProcOutType) <-chan Pro
 	return out
 }
 
-// FromCmdStdOut invokes cmd.StdoutPipe() to produce a readonly channel of captured standard error binary stream
+// FromCmdStdOut invokes cmd.StdoutPipe() to produce a readonly channel of captured standard output binary stream
 func FromCmdStdOut(cmd *exec.Cmd) <-chan ProcOut {
 	reader, err := cmd.StdoutPipe()
 	if err != nil {
