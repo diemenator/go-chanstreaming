@@ -23,3 +23,7 @@ jobs:
       run: (cd ./pkg/chanstreaming && go build -a -v .)
     - name: Test
       run: (cd ./pkg/chanstreaming && go test -a -v .)
+    - name: Build-Exec
+      run: (cd ./pkg/chanstreamingexec && go build -a -v .)
+    - name: Test-Exec
+      run: (cd ./pkg/chanstreamingexec && go test -a -v .)
