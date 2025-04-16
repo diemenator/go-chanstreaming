@@ -43,3 +43,11 @@ func TestCollectWhile(t *testing.T) {
 		t.Error("Expected 6 results in tail, got", len(tailSlice))
 	}
 }
+
+func TestEmpty(t *testing.T) {
+	source := ch.Empty[int]()
+	out := ch.ToSlice(source)
+	if len(out) != 0 {
+		t.Error("Expected 0 results, got", len(out))
+	}
+}
