@@ -9,7 +9,8 @@ import (
 	"time"
 )
 
-type ProcOutType int // 0 - InIO, 1 - OutIO, 2 - InSignal, 3 - InData, 4 - ProcIO
+type ProcOutType int
+
 const (
 	IOError ProcOutType = iota
 	StdOut
@@ -26,7 +27,8 @@ type ProcOut struct {
 	ExitCode    int
 }
 
-type ProcInType int // 0 - InIO, 1 - OutIO, 2 - InSignal, 3 - InData, 4 - ProcIO
+type ProcInType int
+
 const (
 	StdIn ProcInType = iota
 	Signal
