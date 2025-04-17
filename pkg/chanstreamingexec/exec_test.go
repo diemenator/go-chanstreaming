@@ -77,7 +77,7 @@ func newTestStdIn() <-chan chexec.ProcIn {
 	lines := strings.Split(sampleInput, "\n")
 	linesChan := ch.FromSlice(lines)
 	stdIn := ch.Mapped(func(x string) chexec.ProcIn {
-		return chexec.NewProcStdInStr(x + "\n")
+		return chexec.NewProcStdinStr(x + "\n")
 	})(linesChan)
 	return stdIn
 }

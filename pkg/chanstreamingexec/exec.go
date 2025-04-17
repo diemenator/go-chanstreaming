@@ -224,13 +224,13 @@ func StartCommand(cmd *exec.Cmd, writeErrorCallback WriteErrorCallback, src <-ch
 	return ch.Concat(ios, FromProcAwait(cmd))
 }
 
-func NewProcStdInBytes(b []byte) ProcIn {
+func NewProcStdinBytes(b []byte) ProcIn {
 	return ProcIn{
 		MessageType: StdIn,
 		DataBytes:   b,
 	}
 }
 
-func NewProcStdInStr(str string) ProcIn {
-	return NewProcStdInBytes([]byte(str))
+func NewProcStdinStr(str string) ProcIn {
+	return NewProcStdinBytes([]byte(str))
 }
