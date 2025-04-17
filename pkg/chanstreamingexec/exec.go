@@ -72,10 +72,16 @@ func FromIoReadCloser(reader *io.ReadCloser, messageType ProcOutType) <-chan Pro
 				}
 				return
 			}
-			out <- ProcOut{
-				MessageType: messageType,
-				DataBytes:   buf[:n],
-				Time:        time.Now(),
+
+			if n > 0 {
+				bufCpy := make([]byte, n)
+				copy(bufCpy, buf[:n])
+				procOut := ProcOut{
+					MessageType: messageType,
+					DataBytes:   bufCpy,
+					Time:        time.Now(),
+				}
+				out <- procOut
 			}
 		}
 	}()
@@ -151,11 +157,7 @@ func NewIOErrorChan(err error) <-chan ProcOut {
 
 type WriteErrorCallback func(error)
 
-func IgnoreError(err error) {
-	return
-}
-
-func SinkToCmd(cmd *exec.Cmd, onWriteError WriteErrorCallback) (func(src <-chan ProcIn), error) {
+func NewStdinPipeSink(cmd *exec.Cmd, onWriteError WriteErrorCallback) (func(src <-chan ProcIn), error) {
 	stdInPipe, err := cmd.StdinPipe()
 	if err != nil {
 		return nil, err
@@ -189,26 +191,47 @@ func SinkToCmd(cmd *exec.Cmd, onWriteError WriteErrorCallback) (func(src <-chan 
 			for ins := range src {
 				processItem(ins)
 			}
+			closeErr := stdInPipe.Close()
+			if closeErr != nil {
+				onWriteError(closeErr)
+			}
 		}()
 	}
 
 	return result, nil
 }
 
-func Launch(cmd *exec.Cmd, writeErrorCallback WriteErrorCallback) (func(src <-chan ProcIn) <-chan ProcOut, error) {
-	cmdSink, sinkErr := SinkToCmd(cmd, writeErrorCallback)
+// StartCommand executes the passed in command and returns a channel of ProcOut, feeding the command's stdin with the provided source channel in background.
+// The command's stdout and stderr are captured and returned in the resulting channel and the exit code as well as errors that occur.
+// The command is started in the background and the function returns the channel immediately.
+// The `writeErrorCallback` is called when an error occurs while writing to the command's stdin.
+// Noop function will result in retrying the write.
+// Used to introduce backoff, logging or panicking behavior.
+func StartCommand(cmd *exec.Cmd, writeErrorCallback WriteErrorCallback, src <-chan ProcIn) <-chan ProcOut {
+	cmdSink, sinkErr := NewStdinPipeSink(cmd, writeErrorCallback)
 	if sinkErr != nil {
-		return nil, sinkErr
+		return NewIOErrorChan(sinkErr)
+	}
+	ios := ch.Merged(FromCmdStdErr(cmd), FromCmdStdOut(cmd))
+	startErr := cmd.Start()
+	if startErr != nil {
+		return ch.Concat(NewIOErrorChan(startErr), ios)
 	}
 
-	return func(src <-chan ProcIn) <-chan ProcOut {
-		ios := ch.Merged(FromCmdStdErr(cmd), FromCmdStdOut(cmd))
-		cmdSink(src)
-		startErr := cmd.Start()
-		if startErr != nil {
-			return ch.Concat(NewIOErrorChan(startErr), ios)
-		}
+	cmdSink(src)
+	return ch.Concat(ios, FromProcAwait(cmd))
+}
 
-		return ch.Concat(ios, FromProcAwait(cmd))
-	}, nil
+func NewProcStdInStr(str string) ProcIn {
+	return ProcIn{
+		MessageType: StdIn,
+		DataBytes:   []byte(str),
+	}
+}
+
+func NewProcStdInBytes(b []byte) ProcIn {
+	return ProcIn{
+		MessageType: StdIn,
+		DataBytes:   b,
+	}
 }
