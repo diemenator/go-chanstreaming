@@ -1,15 +1,3 @@
-# <-chan streaming
-
-## TLDR
-
-```go get github.com/diemenator/go-chanstreaming/pkg/chanstreaming@latest```
-
-https://pkg.go.dev/github.com/diemenator/go-chanstreaming/pkg/chanstreaming#pkg-functions
-
-see also:  
-https://github.com/golang-design/go2generics/tree/main/chans  
-https://github.com/reugn/go-streams  
-
 ## Background
 
 Golang's channel is a very generic construct that allows to build a variety of parallel processing pipelines with ease, while keeping things modular, type-safe and expressive.
@@ -71,9 +59,3 @@ Particularly useful for **aggregating multiple event sources, log streams, or ex
 - The `chanstreaming` lib addresses roughly same class of data/control streaming scenarios, but chooses to use the `<-chan T` (read-only channel) primitive as the central type of the module's API surface. Decouple, extend, test & rearrange the workflows in type-safe way by using pre-existing builtins.
 - For production use, the real difference would be the style of the execution. For explicit control on both producer and consumer ends, one could consider to use `go-streams` first, or inline the timed-concurrency-critical pieces in their own coroutine or combine the approaches.
 - There are no generic methods in golang, so the `chanstreaming` lib does not try to implement the wrapper that attempts to sidestep it with the use of `reflect` and `any`. We simply expose higher order functions in the API instead for easier composition.
-
-### What's missing?
-- [ ] Examples:
-  - [ ] Basic system & IO (FromCSV(filename), FromShell(command, args...) (to produce a stream of stdout+stderr+eof+exitCode messages)
-  - [ ] Integration demos (shell, kafka, sql, rpc)
-  - [ ] Metering
