@@ -157,7 +157,7 @@ func NewIOErrorChan(err error) <-chan ProcOut {
 
 type WriteErrorCallback func(error)
 
-// NewStdinPipeSink creates a function that takes a channel of ProcIn and writes to the command's stdin or transmits and os signal to the process.
+// NewStdinPipeSink creates a function that takes a channel of ProcIn and communicates it to the running `cmd`
 func NewStdinPipeSink(cmd *exec.Cmd, onWriteError WriteErrorCallback) (func(src <-chan ProcIn), error) {
 	stdInPipe, err := cmd.StdinPipe()
 	if err != nil {
@@ -224,16 +224,13 @@ func StartCommand(cmd *exec.Cmd, writeErrorCallback WriteErrorCallback, src <-ch
 	return ch.Concat(ios, FromProcAwait(cmd))
 }
 
-func NewProcStdInStr(str string) ProcIn {
-	return ProcIn{
-		MessageType: StdIn,
-		DataBytes:   []byte(str),
-	}
-}
-
 func NewProcStdInBytes(b []byte) ProcIn {
 	return ProcIn{
 		MessageType: StdIn,
 		DataBytes:   b,
 	}
+}
+
+func NewProcStdInStr(str string) ProcIn {
+	return NewProcStdInBytes([]byte(str))
 }
