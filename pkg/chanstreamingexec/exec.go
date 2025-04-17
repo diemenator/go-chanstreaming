@@ -157,6 +157,7 @@ func NewIOErrorChan(err error) <-chan ProcOut {
 
 type WriteErrorCallback func(error)
 
+// NewStdinPipeSink creates a function that takes a channel of ProcIn and writes to the command's stdin or transmits and os signal to the process.
 func NewStdinPipeSink(cmd *exec.Cmd, onWriteError WriteErrorCallback) (func(src <-chan ProcIn), error) {
 	stdInPipe, err := cmd.StdinPipe()
 	if err != nil {
@@ -205,8 +206,9 @@ func NewStdinPipeSink(cmd *exec.Cmd, onWriteError WriteErrorCallback) (func(src 
 // The command's stdout and stderr are captured and returned in the resulting channel and the exit code as well as errors that occur.
 // The command is started in the background and the function returns the channel immediately.
 // The `writeErrorCallback` is called when an error occurs while writing to the command's stdin.
-// Noop function will result in retrying the write.
-// Used to introduce backoff, logging or panicking behavior.
+// The `writeErrorCallback` Used to introduce logging with backoff or panicking behavior.
+// The resulting channel would typically be consisting of interleaved StdOut, StdErr and finally ExitCode messages
+// Any process startup or communications errors are returned with IOError messages as well.
 func StartCommand(cmd *exec.Cmd, writeErrorCallback WriteErrorCallback, src <-chan ProcIn) <-chan ProcOut {
 	cmdSink, sinkErr := NewStdinPipeSink(cmd, writeErrorCallback)
 	if sinkErr != nil {
