@@ -205,11 +205,17 @@ func NewStdinPipeSink(cmd *exec.Cmd, onWriteError WriteErrorCallback) (func(src 
 }
 
 // StartCommand executes the passed in command and returns a channel of ProcOut, feeding the command's stdin with the provided source channel in background.
+//
 // The command's stdout and stderr are captured and returned in the resulting channel and the exit code as well as errors that occur.
+//
 // The command is started in the background and the function returns the channel immediately.
+//
 // The `writeErrorCallback` is called when an error occurs while writing to the command's stdin.
+//
 // The `writeErrorCallback` Used to introduce logging with backoff or panicking behavior.
-// The resulting channel would typically be consisting of interleaved StdOut, StdErr and finally ExitCode messages
+//
+// The resulting channel would typically be consisting of interleaved StdOut, StdErr and finally ExitCode messages.
+//
 // Any process startup or communications errors are returned with IOError messages as well.
 func StartCommand(cmd *exec.Cmd, writeErrorCallback WriteErrorCallback, src <-chan ProcIn) <-chan ProcOut {
 	cmdSink, sinkErr := NewStdinPipeSink(cmd, writeErrorCallback)
@@ -226,13 +232,24 @@ func StartCommand(cmd *exec.Cmd, writeErrorCallback WriteErrorCallback, src <-ch
 	return ch.Concat(ios, FromProcAwait(cmd))
 }
 
-func NewProcStdinBytes(b []byte) ProcIn {
+func NewProcSignal(sig os.Signal) ProcIn {
 	return ProcIn{
-		MessageType: StdIn,
+		MessageType: Signal,
+		Signal:      sig,
+	}
+}
+
+func NewProcIn(b []byte, messageType ProcInType) ProcIn {
+	return ProcIn{
+		MessageType: messageType,
 		DataBytes:   b,
 	}
 }
 
+func NewProcInStr(str string, messageType ProcInType) ProcIn {
+	return NewProcIn([]byte(str), messageType)
+}
+
 func NewProcStdinStr(str string) ProcIn {
-	return NewProcStdinBytes([]byte(str))
+	return NewProcInStr(str, StdIn)
 }

@@ -9,32 +9,50 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 )
 
-func logError(t *testing.T) func(err error) {
-	return func(err error) { t.Error(err) }
+type LoggedErrors []error
+
+func (l *LoggedErrors) logError(err error) {
+	*l = append(*l, err)
+}
+
+func (l *LoggedErrors) complainIfAnyLoggedErrors(t *testing.T) {
+	if len(*l) > 0 {
+		t.Error("Error was logged:", *l)
+	}
 }
 
 func TestEcho(t *testing.T) {
-
 	echoCommand := chexec.NewShellCommand("echo hello world")
-	procIo := chexec.StartCommand(echoCommand, logError(t), ch.Empty[chexec.ProcIn]())
-	slice := ch.ToSlice(procIo)
-	t.Log(slice)
+	loggedErrors := LoggedErrors{}
+	procInput := ch.Empty[chexec.ProcIn]()
 
-	if len(slice) == 2 {
-		captured := strings.TrimSpace(string(slice[0].DataBytes))
-		if captured != "hello world" {
-			t.Error(captured)
+	procOutput := chexec.StartCommand(echoCommand, loggedErrors.logError, procInput)
+	procOutSlice := ch.ToSlice(procOutput)
+	procOutStr := collectProcOutSliceAsString(procOutSlice)
+	t.Log(procOutStr)
+
+	if len(procOutSlice) == 2 {
+		stdoutMessage, exitMessage := procOutSlice[0], procOutSlice[1]
+		if stdoutMessage.MessageType != chexec.StdOut {
+			t.Error("wrong message type", stdoutMessage.MessageType)
 		}
-		exit := slice[1].ExitCode
-		if exit != 0 {
-			t.Error(exit)
+		stdoutMessageStr := strings.TrimSpace(string(stdoutMessage.DataBytes))
+		if stdoutMessageStr != "hello world" {
+			t.Error(stdoutMessageStr)
+		}
+		if exitMessage.MessageType != chexec.ExitCode {
+			t.Error("wrong message type", exitMessage.MessageType)
+		}
+		if exitMessage.ExitCode != 0 {
+			t.Error("wrong exit code", exitMessage.ExitCode)
 		}
 	} else {
-		t.Error(len(slice))
+		t.Error(len(procOutSlice))
 	}
 }
 
@@ -44,8 +62,7 @@ hello world 2
 hello world 3
 hello world 4
 hello world 4.5
-hello world 5
-`
+hello world 5`
 
 const sampleOutput string = `You said: hello world 1
 You said: hello world 2
@@ -58,22 +75,22 @@ You said: hello world 5`
 const sampleInputLineLength int = 7
 
 func getRepeaterExecutable() string {
-	echoBackScript := "echo-back"
+	scriptFileName := "echo-back"
 	if runtime.GOOS == "windows" {
-		echoBackScript = `echo-back.cmd`
+		scriptFileName = `echo-back.cmd`
 	} else {
-		echoBackScript = `echo-back.sh`
+		scriptFileName = `echo-back.sh`
 	}
-	echoBackScript, err := filepath.Abs(echoBackScript)
+	scriptFileName, err := filepath.Abs(scriptFileName)
 	if err != nil {
-		message := fmt.Sprint("failed to find absolute path for the test stdin 'You said:<>' repeater", echoBackScript, err)
+		message := fmt.Sprint("failed to find absolute path for the test stdin 'You said:<>' repeater", scriptFileName, err)
 		ourErr := errors.New(message)
 		panic(ourErr)
 	}
-	return echoBackScript
+	return scriptFileName
 }
 
-func newTestStdIn() <-chan chexec.ProcIn {
+func newSampleInputChannel() <-chan chexec.ProcIn {
 	lines := strings.Split(sampleInput, "\n")
 	linesChan := ch.FromSlice(lines)
 	stdIn := ch.Mapped(func(x string) chexec.ProcIn {
@@ -82,28 +99,56 @@ func newTestStdIn() <-chan chexec.ProcIn {
 	return stdIn
 }
 
-func TestEchoStdIn(t *testing.T) {
-	stdIn := newTestStdIn()
-	stdIn = ch.Throttle[chexec.ProcIn](time.Second)(stdIn)
-	startTime := time.Now()
-	procIo := chexec.StartCommand(exec.Command(getRepeaterExecutable()), logError(t), stdIn)
-
-	capturedProcOutputs := ch.ToSlice(procIo)
-
-	elapsed := time.Since(startTime)
-	t.Log("Elapsed time:", elapsed)
-	if elapsed < (time.Second * time.Duration(sampleInputLineLength-1)) {
-		t.Error("Elapsed time is less than expected:", elapsed)
-	}
-
+func collectProcOutSliceAsString(procIo []chexec.ProcOut) string {
 	capturedStdStr := ""
-	for _, v := range capturedProcOutputs {
+	for _, v := range procIo {
 		if v.MessageType == chexec.StdOut || v.MessageType == chexec.StdErr {
 			capturedStdStr = capturedStdStr + string(v.DataBytes)
 		}
 	}
 	capturedStdStr = strings.TrimSpace(capturedStdStr)
 	capturedStdStr = strings.ReplaceAll(capturedStdStr, "\r", "")
+	return capturedStdStr
+}
+
+func TestEchoStdIn(t *testing.T) {
+	procInput := newSampleInputChannel()
+	procInput = ch.Throttle[chexec.ProcIn](time.Second)(procInput)
+	startTime := time.Now()
+	loggedErrors := LoggedErrors{}
+	procOutput := chexec.StartCommand(exec.Command(getRepeaterExecutable()), loggedErrors.logError, procInput)
+	capturedProcOutputs := ch.ToSlice(procOutput)
+
+	elapsed := time.Since(startTime)
+	if elapsed < (time.Second * time.Duration(sampleInputLineLength-1)) {
+		t.Error("Elapsed time is less than expected:", elapsed)
+	}
+
+	capturedStdStr := collectProcOutSliceAsString(capturedProcOutputs)
+	loggedErrors.complainIfAnyLoggedErrors(t)
+	if strings.Compare(sampleOutput, capturedStdStr) == 0 {
+		t.Log("Captured:", capturedStdStr)
+	} else {
+		t.Error("Expected:\n", sampleOutput, "\nGot:\n", capturedStdStr)
+	}
+}
+
+func newProcInputStreamWithSigkillInTheMiddle() <-chan chexec.ProcIn {
+	linesChan1 := newSampleInputChannel()
+	sigint := ch.FromSlice([]chexec.ProcIn{chexec.NewProcSignal(syscall.SIGKILL)})
+	linesChan2 := newSampleInputChannel()
+	return ch.Concat(linesChan1, sigint, linesChan2)
+}
+
+func TestSignal(t *testing.T) {
+	procInput := newProcInputStreamWithSigkillInTheMiddle()
+	procInput = ch.Throttle[chexec.ProcIn](time.Second)(procInput)
+	loggedErrors := LoggedErrors{}
+
+	procOutput := chexec.StartCommand(exec.Command(getRepeaterExecutable()), loggedErrors.logError, procInput)
+	capturedProcOutputs := ch.ToSlice(procOutput)
+	capturedStdStr := collectProcOutSliceAsString(capturedProcOutputs)
+	loggedErrors.complainIfAnyLoggedErrors(t)
 
 	if strings.Compare(sampleOutput, capturedStdStr) == 0 {
 		t.Log("Captured:", capturedStdStr)
