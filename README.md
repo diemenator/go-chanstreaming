@@ -20,4 +20,6 @@ https://github.com/golang-design/go2generics/tree/main/chans
 # todo
 
 [ ] repbrand to `rochannels` for std lib
+
 [ ] showcase
+
