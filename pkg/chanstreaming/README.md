@@ -1,3 +1,5 @@
+The package is a set of `<-chan T` utitilty functions, your `rochannel` std lib module.
+
 ## Background
 
 Golang's channel is a very generic construct that allows to build a variety of parallel processing pipelines with ease, while keeping things modular, type-safe and expressive.
@@ -12,7 +14,7 @@ Here is a sequence of intuitions that underline the designs found in this repo
 
 The `<-chan streaming lib` is a small collection of utilities built around golang's channels that implements **dataflow** paradigm, intended as convenient tool for building modular workflows and data streaming applications.
 
-The functions featured here accept read-only typed channels as inputs and return typed channels as outputs, allowing for easy composition and chaining of operations.
+The functions featured here accept read-only typed channels as inputs and return readonly-typed channels as outputs, allowing for easy composition and chaining of operations.
 
 Here you'll find:
 - `Map(fn, maxWorkers)` & `MapUnordered(fn, maxWorkers)`
