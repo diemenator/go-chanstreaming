@@ -23,3 +23,4 @@ https://github.com/golang-design/go2generics/tree/main/chans
 
 [ ] showcase
 
+[ ] weed out controversial pieces like killswitches and 'async-like' names
