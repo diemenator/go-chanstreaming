@@ -19,8 +19,8 @@ https://github.com/golang-design/go2generics/tree/main/chans
 
 # todo
 
-[ ] rebrand to `rochannels` for std lib
+- [ ] rebrand to `rochannels` for std lib
 
-[ ] showcase
+- [ ] showcase
 
-[ ] weed out controversial pieces like killswitches and 'async-like' names
+- [ ] weed out controversial pieces like killswitches and 'async-like' names
