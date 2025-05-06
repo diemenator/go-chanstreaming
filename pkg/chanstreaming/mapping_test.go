@@ -25,9 +25,7 @@ func TestApply(t *testing.T) {
 
 	}
 
-	if elementsSeen != 10 {
-		t.Error("Expected 10 elements seen, got", elementsSeen)
-	}
+	assert.Equal(t, 10, elementsSeen)
 }
 
 func TestMap(t *testing.T) {
@@ -42,6 +40,7 @@ func TestMap(t *testing.T) {
 	out := ch.Map(func(i int) int {
 		return i * 2
 	}, 5)(source)
+
 	result := ch.ToSlice(out)
 	expected := []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}
 	assert.Equal(t, expected, result)

@@ -23,14 +23,15 @@ func TestCollectWhile(t *testing.T) {
 		}
 	}()
 	result, tailChannel := ch.CollectWhile[int](func(i int) bool { return i < 5 })(source)
-	tailResult := ch.ToSlice(tailChannel)
 
+	tailResult := ch.ToSlice(tailChannel)
 	assert.Equal(t, []int{1, 2, 3, 4}, result)
 	assert.Equal(t, []int{5, 6, 7, 8, 9, 10}, tailResult)
 }
 
 func TestEmpty(t *testing.T) {
 	source := ch.Empty[int]()
+
 	result := ch.ToSlice(source)
 	assert.Empty(t, result)
 }

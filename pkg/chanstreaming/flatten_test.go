@@ -27,6 +27,7 @@ func TestFlatMapSlice(t *testing.T) {
 	channel = ch.FlatMapSlice[int, int](func(x int) []int {
 		return []int{x, x}
 	})(channel)
+
 	result := ch.ToSlice(channel)
 	expected := []int{1, 1, 2, 2, 3, 3, 4, 4, 5, 5}
 	assert.Equal(t, expected, result)

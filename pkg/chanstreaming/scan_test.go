@@ -32,8 +32,8 @@ func TestFold(t *testing.T) {
 		}
 	}()
 	folded := ch.Fold[int, int](func(acc, el int) int { return acc + el }, 0)(source)
-	result := <-folded
 
+	result := <-folded
 	assert.Equal(t, 55, result)
 }
 
