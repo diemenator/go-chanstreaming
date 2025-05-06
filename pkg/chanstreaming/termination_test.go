@@ -3,9 +3,11 @@ package chanstreaming_test
 import (
 	"context"
 	"errors"
-	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
 	"testing"
 	"time"
+
+	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMuted(t *testing.T) {
@@ -16,10 +18,9 @@ func TestMuted(t *testing.T) {
 		source <- ch.Result[int]{Error: errors.New("error")}
 	}()
 	muted := ch.Muted[int](source)
-	results := ch.ToSlice(muted)
-	if len(results) != 1 {
-		t.Error("Expected 1 results, got", len(results))
-	}
+
+	result := ch.ToSlice(muted)
+	assert.Equal(t, 1, len(result))
 }
 
 type CtxTest struct {

@@ -78,13 +78,9 @@ func TestPartition(t *testing.T) {
 	<-done
 	<-done
 
-	expectedEvens := []int{0, 2, 4, 6, 8}
-	expectedOdds := []int{1, 3, 5, 7, 9}
+	evenExpected := []int{0, 2, 4, 6, 8}
+	oddExpected := []int{1, 3, 5, 7, 9}
 
-	if len(evenResults) != len(expectedEvens) {
-		t.Error("Expected evens", expectedEvens, "got", evenResults)
-	}
-	if len(oddResults) != len(expectedOdds) {
-		t.Error("Expected odds", expectedOdds, "got", oddResults)
-	}
+	assert.Equal(t, evenExpected, evenResults)
+	assert.Equal(t, oddExpected, oddResults)
 }
