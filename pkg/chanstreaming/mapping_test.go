@@ -1,9 +1,11 @@
 package chanstreaming_test
 
 import (
-	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
 	"testing"
 	"time"
+
+	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestApply(t *testing.T) {
@@ -31,52 +33,33 @@ func TestApply(t *testing.T) {
 func TestMap(t *testing.T) {
 	source := make(chan int, 10)
 	go func() {
-		for i := 0; i < 10; i++ {
+		defer close(source)
+		for i := range 10 {
 			source <- i
 		}
-		close(source)
 	}()
 
 	out := ch.Map(func(i int) int {
 		return i * 2
 	}, 5)(source)
-	var results []int
-	for i := range out {
-		results = append(results, i)
-	}
-	if len(results) != 10 {
-		t.Error("Expected 10 results, got", len(results))
-	}
-	for i, v := range results {
-		if v != i*2 {
-			t.Errorf("Expected %d, got %d", i*2, v)
-		}
-	}
+	result := ch.ToSlice(out)
+	assert.Equal(t, []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}, result)
 }
 
 func TestMapUnordered(t *testing.T) {
 	source := make(chan int, 10)
 	go func() {
-		for i := 0; i < 10; i++ {
+		defer close(source)
+		for i := range 10 {
 			source <- i
 		}
-		close(source)
 	}()
 
 	out := ch.MapUnordered(func(i int) int {
 		time.Sleep(time.Millisecond * 100 * time.Duration(10-i))
 		return i * 2
 	}, 10)(source)
-	var results []int
-	for i := range out {
-		results = append(results, i)
-	}
-	if len(results) != 10 {
-		t.Errorf("Expected 10 results, got %d", len(results))
-	}
-	for i, v := range results {
-		if v != (9-i)*2 {
-			t.Errorf("Expected %d, got %d", i*2, v)
-		}
-	}
+
+	result := ch.ToSlice(out)
+	assert.Equal(t, []int{18, 16, 14, 12, 10, 8, 6, 4, 2, 0}, result)
 }
