@@ -43,7 +43,8 @@ func TestMap(t *testing.T) {
 		return i * 2
 	}, 5)(source)
 	result := ch.ToSlice(out)
-	assert.Equal(t, []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}, result)
+	expected := []int{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}
+	assert.Equal(t, expected, result)
 }
 
 func TestMapUnordered(t *testing.T) {
@@ -61,5 +62,6 @@ func TestMapUnordered(t *testing.T) {
 	}, 10)(source)
 
 	result := ch.ToSlice(out)
-	assert.Equal(t, []int{18, 16, 14, 12, 10, 8, 6, 4, 2, 0}, result)
+	expected := []int{18, 16, 14, 12, 10, 8, 6, 4, 2, 0}
+	assert.Equal(t, expected, result)
 }
