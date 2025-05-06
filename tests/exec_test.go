@@ -1,4 +1,4 @@
-package chanstreamingexec_test
+package chanstreamingtests_test
 
 import (
 	"errors"
@@ -74,20 +74,26 @@ You said: hello world 5`
 
 const sampleInputLineLength int = 7
 
-func getRepeaterExecutable() string {
+func getRepeaterExecutable() *exec.Cmd {
 	scriptFileName := "echo-back"
-	if runtime.GOOS == "windows" {
-		scriptFileName = `echo-back.cmd`
-	} else {
-		scriptFileName = `echo-back.sh`
+	isWindows := runtime.GOOS == "windows"
+	scriptFile := scriptFileName + ".sh"
+	if isWindows {
+		scriptFile = scriptFileName + ".cmd"
 	}
-	scriptFileName, err := filepath.Abs(scriptFileName)
+
+	scriptPath, err := filepath.Abs(scriptFile)
 	if err != nil {
 		message := fmt.Sprint("failed to find absolute path for the test stdin 'You said:<>' repeater", scriptFileName, err)
 		ourErr := errors.New(message)
 		panic(ourErr)
 	}
-	return scriptFileName
+
+	if isWindows {
+		return exec.Command(scriptPath)
+	} else {
+		return exec.Command("bash", scriptPath)
+	}
 }
 
 func newSampleInputChannel() <-chan chexec.ProcIn {
@@ -116,11 +122,11 @@ func TestEchoStdIn(t *testing.T) {
 	procInput = ch.Throttle[chexec.ProcIn](time.Second)(procInput)
 	startTime := time.Now()
 	loggedErrors := LoggedErrors{}
-	procOutput := chexec.StartCommand(exec.Command(getRepeaterExecutable()), loggedErrors.logError, procInput)
+	procOutput := chexec.StartCommand(getRepeaterExecutable(), loggedErrors.logError, procInput)
 	capturedProcOutputs := ch.ToSlice(procOutput)
 
 	elapsed := time.Since(startTime)
-	if elapsed < (time.Second * time.Duration(sampleInputLineLength-1)) {
+	if elapsed < (time.Second * time.Duration(max(0, sampleInputLineLength-1))) {
 		t.Error("Elapsed time is less than expected:", elapsed)
 	}
 
@@ -145,7 +151,7 @@ func TestSignal(t *testing.T) {
 	procInput = ch.Throttle[chexec.ProcIn](time.Second)(procInput)
 	loggedErrors := LoggedErrors{}
 
-	procOutput := chexec.StartCommand(exec.Command(getRepeaterExecutable()), loggedErrors.logError, procInput)
+	procOutput := chexec.StartCommand(getRepeaterExecutable(), loggedErrors.logError, procInput)
 	capturedProcOutputs := ch.ToSlice(procOutput)
 	capturedStdStr := collectProcOutSliceAsString(capturedProcOutputs)
 	loggedErrors.complainIfAnyLoggedErrors(t)

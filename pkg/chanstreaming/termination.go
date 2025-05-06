@@ -52,7 +52,7 @@ func ViaKillSwitch[T any, K any](killSwitch <-chan K) func(in <-chan T) <-chan T
 	}
 }
 
-// WhenDone creates a new channel that tracks source termination and invokes the `callback` when source is done.
+// WhenDone creates a new channel that tracks source termination and invokes the `callback` when the source is done.
 func WhenDone[T any](callback func()) func(in <-chan T) <-chan T {
 	return func(in <-chan T) <-chan T {
 		out := make(chan T, 1)

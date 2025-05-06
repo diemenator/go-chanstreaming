@@ -1,4 +1,4 @@
-package chanstreaming_test
+package chanstreamingtests_test
 
 import (
 	"testing"
