@@ -11,7 +11,7 @@ Here is the sequence of intuitions that underline the designs found in this repo
 also, if you go meta enough  
 - a N-sized channel of 1-sized channels can represent a not initialised yet group of workers and more  
 
-Here, we expliot the concept of typed readonly-channel as main subject of our API, thus making it possible to build very expressive dataflow sdk around it.
+Here, we expliot the concept of typed readonly-channel as main subject of our API, thus making it possible to build very expressive sdk around it.
 
 # The library
 
