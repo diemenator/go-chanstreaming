@@ -48,18 +48,10 @@ func TestWithContext(t *testing.T) {
 		withCtx := ch.WithContext[int](ctxTest.Ctx)(throttled)
 		whenDone := ch.WhenDone[ch.Result[int]](func() { doneInvoked = true })(withCtx)
 		muted := ch.Muted[int](whenDone)
-		results := ch.ToSlice(muted)
-		if len(results) != len(ctxTest.Output) {
-			t.Error("Expected", len(ctxTest.Output), "results, got", len(results))
-		}
-		for i, v := range results {
-			if v != ctxTest.Output[i] {
-				t.Error("Expected", ctxTest.Output[i], "got", v)
-			}
-		}
-		if !doneInvoked {
-			t.Error("Expected doneInvoked to be true")
-		}
+
+		result := ch.ToSlice(muted)
+		assert.Equal(t, ctxTest.Output, result)
+		assert.Equal(t, true, doneInvoked)
 	}
 
 	for _, ctxTest := range ctxTests {

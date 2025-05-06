@@ -3,7 +3,6 @@ package chanstreaming_test
 import (
 	"testing"
 
-	"github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
 	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
 	"github.com/stretchr/testify/assert"
 )
@@ -31,9 +30,9 @@ func TestUnfoldPanicking(t *testing.T) {
 			panic(state)
 		}
 	}, 1)
-	muted := chanstreaming.Muted(out)
+	muted := ch.Muted(out)
 
-	result := chanstreaming.ToSlice(muted)
+	result := ch.ToSlice(muted)
 	expected := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	assert.Equal(t, expected, result)
 }
