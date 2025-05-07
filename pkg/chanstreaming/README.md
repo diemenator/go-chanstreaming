@@ -2,13 +2,16 @@ The package is a set of `<-chan T` utitilty functions, your `rochannel` std lib 
 
 ## Background
 
-Golang's channel is a very generic construct that allows to build a variety of parallel processing pipelines with ease, while keeping things modular, type-safe and expressive.
+Golang's channel is very versatile construct that allows to build variety of parallel processing pipelines with relative ease, while keeping things modular, type-safe and expressive.
 
-Here is a sequence of intuitions that underline the designs found in this repo
-- a size-1 readonly-channel can represent an awaitable Future
-- a N-sized channel of 1-sized channels can represent a group of workers
+Here is the sequence of intuitions that underline the designs found in this repo
+- a size-1 readonly-channel can represent an awaitable
 - a strongly-typed readonly channel can be used to interpreted a typed async iterable/enumerable, expressed with channels
-- a collection of functions that use goroutines to create and serve new channels can be used to build parallel highly composable sdk (like in Akka Streams and PLINQ) with `<-chan T` championed as a core primitive.
+- a collection of functions that use goroutines to create and serve new channels can be used to build parallel and highly composable sdks (like, Akka Streams or PLINQ)
+also, if you go meta enough  
+- a N-sized channel of 1-sized channels can represent a not initialised yet group of workers and more  
+
+Here, we expliot the concept of typed readonly-channel as main subject of our API, thus making it possible to build very expressive sdk around it.
 
 # The library
 
