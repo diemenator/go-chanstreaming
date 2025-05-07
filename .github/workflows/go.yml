@@ -21,9 +21,7 @@ jobs:
         go-version: '1.24'
     - name: Build
       run: (cd ./pkg/chanstreaming && go build -a -v .)
-    - name: Test
-      run: (cd ./pkg/chanstreaming && go test -a -v .)
     - name: Build-Exec
       run: (cd ./pkg/chanstreamingexec && go build -a -v .)
-    - name: Test-Exec
-      run: (cd ./pkg/chanstreamingexec && go test -a -v .)
+    - name: Test
+      run: (cd ./tests && go test -a -v .)

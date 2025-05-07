@@ -1,9 +1,11 @@
-package chanstreaming_test
+package chanstreamingtests_test
 
 import (
-	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
 	"testing"
 	"time"
+
+	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMergeTwoSources(t *testing.T) {
@@ -31,29 +33,9 @@ func TestMergeTwoSources(t *testing.T) {
 	// Merge both sources
 	out := ch.Merge([]<-chan int{source1, source2})
 
-	// Collect results
-	results := []int{}
-	for v := range out {
-		results = append(results, v)
-	}
-
-	// Validate results (order not guaranteed)
-	if len(results) != 10 {
-		t.Errorf("Expected 10 results, got %d", len(results))
-	}
-
-	// Ensure all expected values exist in the output (order is not fixed)
-	expectedValues := map[int]bool{
-		1: true, 2: true, 3: true, 4: true, 5: true,
-		100: true, 101: true, 102: true, 103: true, 104: true,
-	}
-	for _, v := range results {
-		if !expectedValues[v] {
-			t.Error("Unexpected value received:", v)
-		}
-	}
-
-	t.Log("Merge test passed with results:", results)
+	result := ch.ToSlice(out)
+	expected := []int{1, 2, 3, 4, 5, 100, 101, 102, 103, 104}
+	assert.ElementsMatch(t, expected, result)
 }
 
 func TestPartition(t *testing.T) {
@@ -62,7 +44,7 @@ func TestPartition(t *testing.T) {
 	// Populate source channel
 	go func() {
 		defer close(source)
-		for i := 0; i < 10; i++ {
+		for i := range 10 {
 			source <- i
 		}
 	}()
@@ -96,13 +78,9 @@ func TestPartition(t *testing.T) {
 	<-done
 	<-done
 
-	expectedEvens := []int{0, 2, 4, 6, 8}
-	expectedOdds := []int{1, 3, 5, 7, 9}
+	evenExpected := []int{0, 2, 4, 6, 8}
+	oddExpected := []int{1, 3, 5, 7, 9}
 
-	if len(evenResults) != len(expectedEvens) {
-		t.Error("Expected evens", expectedEvens, "got", evenResults)
-	}
-	if len(oddResults) != len(expectedOdds) {
-		t.Error("Expected odds", expectedOdds, "got", oddResults)
-	}
+	assert.Equal(t, evenExpected, evenResults)
+	assert.Equal(t, oddExpected, oddResults)
 }

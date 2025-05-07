@@ -9,37 +9,6 @@ import (
 	"time"
 )
 
-type ProcOutType int
-
-const (
-	IOError ProcOutType = iota
-	StdOut
-	StdErr
-	ExitCode
-)
-
-type ProcOut struct {
-	Origin      *exec.Cmd
-	Time        time.Time
-	MessageType ProcOutType
-	Error       error
-	DataBytes   []byte
-	ExitCode    int
-}
-
-type ProcInType int
-
-const (
-	StdIn ProcInType = iota
-	Signal
-)
-
-type ProcIn struct {
-	MessageType ProcInType
-	DataBytes   []byte
-	Signal      os.Signal
-}
-
 func NewShellCommand(command string) *exec.Cmd {
 	if runtime.GOOS == "windows" {
 		return exec.Command("cmd", "/C", command)

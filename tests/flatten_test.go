@@ -1,9 +1,10 @@
-package chanstreaming_test
+package chanstreamingtests_test
 
 import (
-	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
-	"slices"
 	"testing"
+
+	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFlatMap(t *testing.T) {
@@ -16,9 +17,7 @@ func TestFlatMap(t *testing.T) {
 
 	result := ch.ToSlice(channel)
 	expected := []int{1, 1, 2, 2, 3, 3, 4, 4, 5, 5}
-	if !slices.Equal(result, expected) {
-		t.Errorf("Expected %v, got %v", expected, result)
-	}
+	assert.Equal(t, expected, result)
 }
 
 func TestFlatMapSlice(t *testing.T) {
@@ -28,9 +27,8 @@ func TestFlatMapSlice(t *testing.T) {
 	channel = ch.FlatMapSlice[int, int](func(x int) []int {
 		return []int{x, x}
 	})(channel)
+
 	result := ch.ToSlice(channel)
 	expected := []int{1, 1, 2, 2, 3, 3, 4, 4, 5, 5}
-	if !slices.Equal(result, expected) {
-		t.Errorf("Expected %v, got %v", expected, result)
-	}
+	assert.Equal(t, expected, result)
 }

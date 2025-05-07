@@ -1,11 +1,13 @@
-package chanstreaming_test
+package chanstreamingtests_test
 
 import (
 	"context"
 	"errors"
-	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
 	"testing"
 	"time"
+
+	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMuted(t *testing.T) {
@@ -16,13 +18,13 @@ func TestMuted(t *testing.T) {
 		source <- ch.Result[int]{Error: errors.New("error")}
 	}()
 	muted := ch.Muted[int](source)
-	results := ch.ToSlice(muted)
-	if len(results) != 1 {
-		t.Error("Expected 1 results, got", len(results))
-	}
+
+	result := ch.ToSlice(muted)
+	assert.Equal(t, 1, len(result))
 }
 
-type CtxTest struct {
+// CtxTestCase is a struct that holds context and the expected output, representing a test case.
+type CtxTestCase struct {
 	Ctx    context.Context
 	Output []int
 }
@@ -34,31 +36,23 @@ func TestWithContext(t *testing.T) {
 	deadlineCtx, cancelFunc := context.WithDeadline(context.Background(), deadline)
 	defer cancelFunc()
 
-	ctxTests := []CtxTest{
+	ctxTests := []CtxTestCase{
 		{deadlineCtx, theSlice[:2]},
 		{context.Background(), theSlice},
 		{context.TODO(), theSlice},
 	}
 
 	doneInvoked := false
-	doTest := func(ctxTest CtxTest) {
+	doTest := func(ctxTest CtxTestCase) {
 		source := ch.FromSlice(theSlice)
 		throttled := ch.Throttle[int](100 * time.Millisecond)(source)
 		withCtx := ch.WithContext[int](ctxTest.Ctx)(throttled)
 		whenDone := ch.WhenDone[ch.Result[int]](func() { doneInvoked = true })(withCtx)
 		muted := ch.Muted[int](whenDone)
-		results := ch.ToSlice(muted)
-		if len(results) != len(ctxTest.Output) {
-			t.Error("Expected", len(ctxTest.Output), "results, got", len(results))
-		}
-		for i, v := range results {
-			if v != ctxTest.Output[i] {
-				t.Error("Expected", ctxTest.Output[i], "got", v)
-			}
-		}
-		if !doneInvoked {
-			t.Error("Expected doneInvoked to be true")
-		}
+
+		result := ch.ToSlice(muted)
+		assert.Equal(t, ctxTest.Output, result)
+		assert.Equal(t, true, doneInvoked)
 	}
 
 	for _, ctxTest := range ctxTests {

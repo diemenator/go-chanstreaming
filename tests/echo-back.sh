@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/usr/bin/bash
 # Loop forever until input fails (e.g., EOF)
 while true; do
   # Prompt user input

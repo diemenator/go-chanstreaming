@@ -1,9 +1,11 @@
-package chanstreaming_test
+package chanstreamingtests_test
 
 import (
-	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
 	"testing"
 	"time"
+
+	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestScan(t *testing.T) {
@@ -15,20 +17,10 @@ func TestScan(t *testing.T) {
 		}
 	}()
 	scanned := ch.Scan[int, int](func(acc, el int) int { return acc + el }, 0)(source)
-	results := []int{}
-	for v := range scanned {
-		results = append(results, v)
-	}
-	if len(results) != 10 {
-		t.Error("Expected 10 results, got", len(results))
-	}
-	sum := 0
-	for i, v := range results {
-		sum += i + 1
-		if v != sum {
-			t.Error("Expected", sum, "got", v)
-		}
-	}
+
+	result := ch.ToSlice(scanned)
+	expected := []int{1, 3, 6, 10, 15, 21, 28, 36, 45, 55}
+	assert.Equal(t, expected, result)
 }
 
 func TestFold(t *testing.T) {
@@ -40,10 +32,9 @@ func TestFold(t *testing.T) {
 		}
 	}()
 	folded := ch.Fold[int, int](func(acc, el int) int { return acc + el }, 0)(source)
+
 	result := <-folded
-	if result != 55 {
-		t.Error("Expected 55, got", result)
-	}
+	assert.Equal(t, 55, result)
 }
 
 func TestWithSlidingWindowTimed(t *testing.T) {
