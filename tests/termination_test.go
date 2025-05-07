@@ -1,4 +1,4 @@
-package chanstreaming_test
+package chanstreamingtests_test
 
 import (
 	"context"
@@ -23,7 +23,8 @@ func TestMuted(t *testing.T) {
 	assert.Equal(t, 1, len(result))
 }
 
-type CtxTest struct {
+// CtxTestCase is a struct that holds context and the expected output, representing a test case.
+type CtxTestCase struct {
 	Ctx    context.Context
 	Output []int
 }
@@ -35,14 +36,14 @@ func TestWithContext(t *testing.T) {
 	deadlineCtx, cancelFunc := context.WithDeadline(context.Background(), deadline)
 	defer cancelFunc()
 
-	ctxTests := []CtxTest{
+	ctxTests := []CtxTestCase{
 		{deadlineCtx, theSlice[:2]},
 		{context.Background(), theSlice},
 		{context.TODO(), theSlice},
 	}
 
 	doneInvoked := false
-	doTest := func(ctxTest CtxTest) {
+	doTest := func(ctxTest CtxTestCase) {
 		source := ch.FromSlice(theSlice)
 		throttled := ch.Throttle[int](100 * time.Millisecond)(source)
 		withCtx := ch.WithContext[int](ctxTest.Ctx)(throttled)

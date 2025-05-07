@@ -24,3 +24,16 @@ https://github.com/golang-design/go2generics/tree/main/chans
 - [ ] showcase
 
 - [ ] weed out controversial pieces like killswitches and 'async-like' names
+
+
+### go.work
+
+```work
+go 1.24.1
+
+use (
+	./pkg/chanstreaming
+	./pkg/chanstreamingexec
+	./tests
+)
+```
