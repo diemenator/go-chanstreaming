@@ -10,9 +10,9 @@ import (
 func TestFlatMap(t *testing.T) {
 	theSlice := []int{1, 2, 3, 4, 5}
 	// Create a channel of integers from the slice
-	channel := ch.FromSlice[int](theSlice)
-	channel = ch.FlatMap[int, int](func(x int) <-chan int {
-		return ch.FromSlice[int]([]int{x, x})
+	channel := ch.FromSlice(theSlice)
+	channel = ch.FlatMap(func(x int) <-chan int {
+		return ch.FromSlice([]int{x, x})
 	})(channel)
 
 	result := ch.ToSlice(channel)
@@ -23,8 +23,8 @@ func TestFlatMap(t *testing.T) {
 func TestFlatMapSlice(t *testing.T) {
 	theSlice := []int{1, 2, 3, 4, 5}
 	// Create a channel of integers from the slice
-	channel := ch.FromSlice[int](theSlice)
-	channel = ch.FlatMapSlice[int, int](func(x int) []int {
+	channel := ch.FromSlice(theSlice)
+	channel = ch.FlatMapSlice(func(x int) []int {
 		return []int{x, x}
 	})(channel)
 

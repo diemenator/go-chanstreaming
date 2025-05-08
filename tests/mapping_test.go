@@ -20,7 +20,7 @@ func TestApply(t *testing.T) {
 			source <- i
 		}
 	}()
-	applied := ch.Apply[int](theElementCallback)(source)
+	applied := ch.Apply(theElementCallback)(source)
 	for range applied {
 
 	}

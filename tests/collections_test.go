@@ -7,6 +7,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestToSlice(t *testing.T) {
+	channel := make(chan int)
+	go func() {
+		defer close(channel)
+		for i := range 5 {
+			channel <- i
+		}
+	}()
+
+	result := ch.ToSlice(channel)
+	assert.Equal(t, []int{0, 1, 2, 3, 4}, result)
+}
+
 func TestFromSlice(t *testing.T) {
 	source := ch.FromSlice([]int{1, 2, 3, 4, 5})
 
@@ -22,7 +35,8 @@ func TestCollectWhile(t *testing.T) {
 			source <- i
 		}
 	}()
-	result, tailChannel := ch.CollectWhile[int](func(i int) bool { return i < 5 })(source)
+	predicate := func(i int) bool { return i < 5 }
+	result, tailChannel := ch.CollectWhile(predicate)(source)
 
 	tailResult := ch.ToSlice(tailChannel)
 	assert.Equal(t, []int{1, 2, 3, 4}, result)
