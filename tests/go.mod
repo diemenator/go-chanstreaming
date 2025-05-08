@@ -8,6 +8,11 @@ require (
 	github.com/stretchr/testify v1.10.0
 )
 
+replace (
+	github.com/diemenator/go-chanstreaming/pkg/chanstreaming => ../pkg/chanstreaming
+	github.com/diemenator/go-chanstreaming/pkg/chanstreamingexec => ../pkg/chanstreamingexec
+)
+
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

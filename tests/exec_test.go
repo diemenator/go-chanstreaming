@@ -3,8 +3,6 @@ package chanstreamingtests_test
 import (
 	"errors"
 	"fmt"
-	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
-	chexec "github.com/diemenator/go-chanstreaming/pkg/chanstreamingexec"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -12,6 +10,10 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	ch "github.com/diemenator/go-chanstreaming/pkg/chanstreaming"
+	chexec "github.com/diemenator/go-chanstreaming/pkg/chanstreamingexec"
+	"github.com/stretchr/testify/assert"
 )
 
 type LoggedErrors []error
@@ -36,23 +38,20 @@ func TestEcho(t *testing.T) {
 	procOutStr := collectProcOutSliceAsString(procOutSlice)
 	t.Log(procOutStr)
 
-	if len(procOutSlice) == 2 {
-		stdoutMessage, exitMessage := procOutSlice[0], procOutSlice[1]
-		if stdoutMessage.MessageType != chexec.StdOut {
-			t.Error("wrong message type", stdoutMessage.MessageType)
-		}
-		stdoutMessageStr := strings.TrimSpace(string(stdoutMessage.DataBytes))
-		if stdoutMessageStr != "hello world" {
-			t.Error(stdoutMessageStr)
-		}
-		if exitMessage.MessageType != chexec.ExitCode {
-			t.Error("wrong message type", exitMessage.MessageType)
-		}
-		if exitMessage.ExitCode != 0 {
-			t.Error("wrong exit code", exitMessage.ExitCode)
-		}
-	} else {
-		t.Error(len(procOutSlice))
+	assert.Equal(t, 2, len(procOutSlice))
+	stdoutMessage, exitMessage := procOutSlice[0], procOutSlice[1]
+	if stdoutMessage.MessageType != chexec.StdOut {
+		t.Error("wrong message type", stdoutMessage.MessageType)
+	}
+	stdoutMessageStr := strings.TrimSpace(string(stdoutMessage.DataBytes))
+	if stdoutMessageStr != "hello world" {
+		t.Error(stdoutMessageStr)
+	}
+	if exitMessage.MessageType != chexec.ExitCode {
+		t.Error("wrong message type", exitMessage.MessageType)
+	}
+	if exitMessage.ExitCode != 0 {
+		t.Error("wrong exit code", exitMessage.ExitCode)
 	}
 }
 
@@ -126,17 +125,11 @@ func TestEchoStdIn(t *testing.T) {
 	capturedProcOutputs := ch.ToSlice(procOutput)
 
 	elapsed := time.Since(startTime)
-	if elapsed < (time.Second * time.Duration(max(0, sampleInputLineLength-1))) {
-		t.Error("Elapsed time is less than expected:", elapsed)
-	}
+	assert.GreaterOrEqual(t, elapsed, time.Second*time.Duration(max(0, sampleInputLineLength-1)))
 
 	capturedStdStr := collectProcOutSliceAsString(capturedProcOutputs)
 	loggedErrors.complainIfAnyLoggedErrors(t)
-	if strings.Compare(sampleOutput, capturedStdStr) == 0 {
-		t.Log("Captured:", capturedStdStr)
-	} else {
-		t.Error("Expected:\n", sampleOutput, "\nGot:\n", capturedStdStr)
-	}
+	assert.Equal(t, sampleOutput, capturedStdStr)
 }
 
 func newProcInputStreamWithSigkillInTheMiddle() <-chan chexec.ProcIn {
@@ -156,9 +149,5 @@ func TestSignal(t *testing.T) {
 	capturedStdStr := collectProcOutSliceAsString(capturedProcOutputs)
 	loggedErrors.complainIfAnyLoggedErrors(t)
 
-	if strings.Compare(sampleOutput, capturedStdStr) == 0 {
-		t.Log("Captured:", capturedStdStr)
-	} else {
-		t.Error("Expected:\n", sampleOutput, "\nGot:\n", capturedStdStr)
-	}
+	assert.Equal(t, sampleOutput, capturedStdStr)
 }
