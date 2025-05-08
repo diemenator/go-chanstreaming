@@ -23,7 +23,7 @@ https://github.com/golang-design/go2generics/tree/main/chans
 
 - [ ] reconsider or move into separate module some of controversial pieces of API like killswitches and 'async-like' names
 
-- [ ] showcas
+- [ ] showcase
 
 
 ### go.work
