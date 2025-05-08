@@ -8,7 +8,7 @@ import (
 )
 
 func TestUnfoldResult(t *testing.T) {
-	out := ch.UnfoldSafe[int, int](func(state int) (int, int, bool) {
+	out := ch.UnfoldSafe(func(state int) (int, int, bool) {
 		if state <= 10 {
 			return state + 1, state, true
 		} else {
@@ -23,7 +23,7 @@ func TestUnfoldResult(t *testing.T) {
 }
 
 func TestUnfoldPanicking(t *testing.T) {
-	out := ch.UnfoldSafe[int, int](func(state int) (int, int, bool) {
+	out := ch.UnfoldSafe(func(state int) (int, int, bool) {
 		if state <= 10 {
 			return state + 1, state, true
 		} else {

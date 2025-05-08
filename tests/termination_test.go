@@ -17,10 +17,10 @@ func TestMuted(t *testing.T) {
 		source <- ch.Result[int]{Data: 1}
 		source <- ch.Result[int]{Error: errors.New("error")}
 	}()
-	muted := ch.Muted[int](source)
+	muted := ch.Muted(source)
 
 	result := ch.ToSlice(muted)
-	assert.Equal(t, 1, len(result))
+	assert.Equal(t, []int{1}, result)
 }
 
 // CtxTestCase is a struct that holds context and the expected output, representing a test case.
@@ -48,7 +48,7 @@ func TestWithContext(t *testing.T) {
 		throttled := ch.Throttle[int](100 * time.Millisecond)(source)
 		withCtx := ch.WithContext[int](ctxTest.Ctx)(throttled)
 		whenDone := ch.WhenDone[ch.Result[int]](func() { doneInvoked = true })(withCtx)
-		muted := ch.Muted[int](whenDone)
+		muted := ch.Muted(whenDone)
 
 		result := ch.ToSlice(muted)
 		assert.Equal(t, ctxTest.Output, result)
