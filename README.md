@@ -21,9 +21,9 @@ https://github.com/golang-design/go2generics/tree/main/chans
 
 - [ ] rebrand to `rochannels` for std lib
 
-- [ ] showcase
-
 - [ ] reconsider or move into separate module some of controversial pieces of API like killswitches and 'async-like' names
+
+- [ ] showcas
 
 
 ### go.work
