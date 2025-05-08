@@ -61,5 +61,5 @@ func TestJitter(t *testing.T) {
 
 	assert.GreaterOrEqual(t, count[0], n/2)
 	assert.GreaterOrEqual(t, count[1], n/3)
-	assert.Equal(t, count[2], 0)
+	assert.Equal(t, 0, count[2])
 }
