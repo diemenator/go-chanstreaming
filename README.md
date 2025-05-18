@@ -34,6 +34,6 @@ go 1.24.1
 use (
 	./pkg/chanstreaming
 	./pkg/chanstreamingexec
-	./tests
+	./pkg/tests
 )
 ```
