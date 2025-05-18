@@ -9,8 +9,8 @@ require (
 )
 
 replace (
-	github.com/diemenator/go-chanstreaming/pkg/chanstreaming => ../pkg/chanstreaming
-	github.com/diemenator/go-chanstreaming/pkg/chanstreamingexec => ../pkg/chanstreamingexec
+	github.com/diemenator/go-chanstreaming/pkg/chanstreaming => ./../chanstreaming
+	github.com/diemenator/go-chanstreaming/pkg/chanstreamingexec => ./../chanstreamingexec
 )
 
 require (
