@@ -37,7 +37,7 @@ func TestJitter(t *testing.T) {
 		}
 	}()
 
-	throttle := ch.Jitter[int](10 * time.Millisecond)
+	throttle := ch.Jitter[int](20 * time.Millisecond)
 	out := throttle(source)
 
 	// TODO: it's better to test the histogram of delays
@@ -45,5 +45,5 @@ func TestJitter(t *testing.T) {
 	result := ch.ToSlice(out)
 	elapsed := time.Since(start)
 	assert.Equal(t, []int{0, 1, 2, 3, 4}, result)
-	assert.LessOrEqual(t, elapsed, 50*time.Millisecond)
+	assert.LessOrEqual(t, elapsed, 100*time.Millisecond)
 }
