@@ -24,4 +24,4 @@ jobs:
     - name: Build-Exec
       run: (cd ./pkg/chanstreamingexec && go build -a -v .)
     - name: Test
-      run: (cd ./tests && go test -a -v .)
+      run: (cd ./pkg/tests && go test -a -v .)
